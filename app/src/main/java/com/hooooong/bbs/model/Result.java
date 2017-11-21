@@ -1,6 +1,6 @@
 package com.hooooong.bbs.model;
 
-import java.util.Arrays;
+import java.util.List;
 
 /**
  * Created by Android Hong on 2017-10-26.
@@ -9,7 +9,7 @@ import java.util.Arrays;
 public class Result {
     private String code;
     private String msg;
-    private Data[] data;
+    private List<Data> data;
 
     public String getCode() {
         return code;
@@ -31,11 +31,11 @@ public class Result {
         this.msg = msg;
     }
 
-    public Data[] getData() {
+    public List<Data> getData() {
         return data;
     }
 
-    public void setData(Data[] data) {
+    public void setData(List<Data> data) {
         this.data = data;
     }
 
@@ -44,7 +44,7 @@ public class Result {
         return "Result{" +
                 "code='" + code + '\'' +
                 ", msg='" + msg + '\'' +
-                ", data=" + Arrays.toString(data) +
+                ", data=" + data +
                 '}';
     }
 }

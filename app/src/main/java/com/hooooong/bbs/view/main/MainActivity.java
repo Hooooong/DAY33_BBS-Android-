@@ -1,7 +1,6 @@
 package com.hooooong.bbs.view.main;
 
 import android.content.Intent;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
@@ -10,17 +9,20 @@ import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.widget.ProgressBar;
 
-import com.google.gson.Gson;
 import com.hooooong.bbs.R;
 import com.hooooong.bbs.model.Const;
 import com.hooooong.bbs.model.Data;
 import com.hooooong.bbs.model.Result;
-import com.hooooong.bbs.util.Remote;
+import com.hooooong.bbs.util.ServiceGenerator;
+import com.hooooong.bbs.util.iBbs;
 import com.hooooong.bbs.view.main.adapter.MainAdapter;
 import com.hooooong.bbs.view.wrtie.WriteActivity;
 
-import java.util.Arrays;
 import java.util.List;
+
+import io.reactivex.Observable;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.schedulers.Schedulers;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -54,7 +56,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             @Override
             public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
                 super.onScrolled(recyclerView, dx, dy);
-                recyclerView.getLayoutManager().getItemCount();
 
                 int totalCount = recyclerView.getLayoutManager().getItemCount();
                 int lastPosition = ((LinearLayoutManager)recyclerView.getLayoutManager()).findLastVisibleItemPosition();
@@ -67,13 +68,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         fab = (FloatingActionButton) findViewById(R.id.fab);
         progressBar = (ProgressBar) findViewById(R.id.progressBar);
-
         fab.setOnClickListener(this);
     }
 
 
     private void load() {
-        new AsyncTask<String, Void, String>() {
+        /*new AsyncTask<String, Void, String>() {
 
             @Override
             protected void onPreExecute() {
@@ -107,7 +107,26 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     page++;
                 }
             }
-        }.execute(url+ page );
+        }.execute(url+ page );*/
+
+        // 1. 서비스 생성
+        iBbs service = ServiceGenerator.createBbs(iBbs.class);
+        // 2. Observer 생성 ( Emitter 생성 )
+        Observable<Result> observable = service.getData("all", page);
+        observable.subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(
+                        data -> {
+                            if(data.isSuccess()){
+                                if (page == 1) {
+                                    setAdapter(data.getData());
+                                } else {
+                                    addAdapter(data.getData());
+                                }
+                                page++;
+                            }
+                        }
+                );
     }
 
     private void setAdapter(List<Data> dataList) {
